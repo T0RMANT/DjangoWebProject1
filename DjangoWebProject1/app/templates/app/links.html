@@ -1,0 +1,32 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Useful Resources</title>
+</head>
+<body>
+    <h2>Useful Resources</h2>
+    <p>Here are some valuable links:</p>
+    <ul>
+        <li>
+            <a href="https://www.djangoproject.com/" target="_blank">
+                <img src="{% static 'app/content/1.jpg' %}" alt="Django Logo" />
+            </a>
+        </li>
+        <li>
+            <a href="https://www.python.org/" target="_blank">
+                <img src="{% static 'app/content/2.jpg' %}" alt="Python Logo" />
+            </a>
+        </li>
+        <li>
+            <a href="https://www.wiki.org/" target="_blank">
+                <img src="{% static 'app/content/3.jpg' %}" alt="Wiki Logo" />
+            </a>
+        </li>
+        <!-- Add more links as needed -->
+    </ul>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 col-md-offset-2">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h1>{{ post.title }}</h1>
+                <p class="text-muted">
+                    Опубликовано {{ post.created_at|date:"d.m.Y" }} by {{ post.author.username }}
+                </p>
+            </div>
+            <div class="panel-body">
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" class="img-responsive" alt="{{ post.title }}">
+                    <hr>
+                {% endif %}
+                {{ post.text|linebreaks }}
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Comments Section -->
+        <h3>Комментарии</h3>
+        {% for comment in comments %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <strong>{{ comment.author.username }}</strong>
+                    <span class="text-muted">- {{ comment.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                <div class="panel-body">
+                    {{ comment.text|linebreaks }}
+                </div>
+            </div>
+        {% empty %}
+            <p>Комментариев пока нет. Будьте первым!</p>
+        {% endfor %}
+
+        <hr>
+
+        <!-- Add Comment Form -->
+        <h3>Оставить комментарий</h3>
+        {% if user.is_authenticated %}
+            <form method="post">
+                {% csrf_token %}
+                {{ comment_form.as_p }}
+                <button type="submit" class="btn btn-success">Отправить</button>
+            </form>
+        {% else %}
+            <p>Пожалуйста, <a href="{% url 'login' %}?next={{ request.path }}">войдите</a>, чтобы оставить комментарий.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

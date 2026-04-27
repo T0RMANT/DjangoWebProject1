@@ -1,0 +1,49 @@
+{% extends "app/layout.html" %}
+
+{% block title %}
+  Результаты поиска
+{% endblock %}
+
+{% block content %}
+  {% if query %}
+    <h1>Результаты поиска по запросу "{{ query }}"</h1>
+    {% if results %}
+      <div class="row">
+        {% for product in results %}
+          <div class="col-md-4 col-sm-6">
+            <div class="thumbnail">
+              <a href="{{ product.get_absolute_url }}">
+                {% if product.main_image %}
+                  <img src="{{ product.main_image.url }}" alt="{{ product.name }}" style="height:200px; width:100%; object-fit: cover;">
+                {% else %}
+                  <img src="http://placehold.it/300x200" alt="{{ product.name }}">
+                {% endif %}
+              </a>
+              <div class="caption">
+                <h4><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h4>
+                <p>{{ product.price }} руб.</p>
+                <p>
+                    {% if product.avg_rating %}
+                        Рейтинг: ★ {{ product.avg_rating|floatformat:1 }}/5.0
+                    {% else %}
+                        Рейтинг: нет оценок
+                    {% endif %}
+                </p>
+                <form action="{% url "app:cart_add" product.id %}" method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="quantity" value="1">
+                  <input type="hidden" name="update" value="False">
+                  <button type="submit" class="btn btn-primary">В корзину</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>По вашему запросу ничего не найдено.</p>
+    {% endif %}
+  {% else %}
+    <h1>Пожалуйста, введите поисковый запрос.</h1>
+  {% endif %}
+{% endblock %}

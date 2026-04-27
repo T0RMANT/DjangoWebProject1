@@ -1,0 +1,68 @@
+{% extends "app/layout.html" %}
+{% load static %}
+
+{% block title %}
+  Ваша корзина
+{% endblock %}
+
+{% block content %}
+  <h1>Ваша корзина</h1>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Изображение</th>
+        <th>Товар</th>
+        <th>Количество</th>
+        <th>Удалить</th>
+        <th class="text-right">Цена за шт.</th>
+        <th class="text-right">Общая цена</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in cart %}
+        {% with product=item.product %}
+          <tr>
+            <td>
+              <a href="{{ product.get_absolute_url }}">
+                {% if product.main_image %}
+                    <img src="{{ product.main_image.url }}" style="height: 50px;">
+                {% else %}
+                    <img src="http://placehold.it/50x50">
+                {% endif %}
+              </a>
+            </td>
+            <td>{{ product.name }}</td>
+            <td>
+              <form action="{% url "app:cart_add" product.id %}" method="post">
+                {{ item.update_quantity_form.quantity }}
+                {{ item.update_quantity_form.update }}
+                <input type="submit" value="Обновить" class="btn btn-xs btn-info">
+                {% csrf_token %}
+              </form>
+            </td>
+            <td><a href="{% url "app:cart_remove" product.id %}">Удалить</a></td>
+            <td class="text-right">{{ item.price }} руб.</td>
+            <td class="text-right">{{ item.total_price }} руб.</td>
+          </tr>
+        {% endwith %}
+      {% endfor %}
+      <tr class="info">
+        <td colspan="5" class="text-right"><b>Итого</b></td>
+        <td class="text-right"><b>{{ cart.get_total_price }} руб.</b></td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="text-right">
+    <a href="{% url "app:product_list" %}" class="btn btn-default">Продолжить покупки</a>
+    {% if user.is_authenticated %}
+      <a href="{% url "app:order_create" %}" class="btn btn-primary">Оформить заказ</a>
+    {% else %}
+      <span class="btn btn-primary disabled">Оформить заказ</span>
+    {% endif %}
+  </p>
+  {% if not user.is_authenticated %}
+    <div class="alert alert-info text-right">
+      Пожалуйста, <a href="{% url 'login' %}?next={{ request.path }}">войдите</a> или <a href="{% url 'registration' %}">зарегистрируйтесь</a>, чтобы оформить заказ.
+    </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+
+<h2>Подтверждение оплаты заказа №{{ order.id }}</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <h4>Детали заказа:</h4>
+        <p><strong>Имя:</strong> {{ order.first_name }} {{ order.last_name }}</p>
+        <p><strong>Email:</strong> {{ order.email }}</p>
+        <p><strong>Адрес:</strong> {{ order.address }}, {{ order.city }}, {{ order.postal_code }}</p>
+        
+        <h4>Товары в заказе:</h4>
+        <ul class="list-group mb-3">
+            {% for item in order.items.all %}
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <div>
+                        <h6 class="my-0">{{ item.product.name }}</h6>
+                        <small class="text-muted">Количество: {{ item.quantity }}</small>
+                    </div>
+                    <span class="text-muted">{{ item.get_cost }} руб.</span>
+                </li>
+            {% endfor %}
+            <li class="list-group-item d-flex justify-content-between">
+                <span><strong>Итого:</strong></span>
+                <strong>{{ order.get_total_cost }} руб.</strong>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Симуляция оплаты</h4>
+                <p class="card-text">Это страница-заглушка для имитации процесса оплаты. Нажимая "Оплатить", вы подтверждаете заказ, и он будет помечен как оплаченный.</p>
+                <form action="{% url 'app:dummy_payment' order.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">Оплатить {{ order.get_total_cost }} руб.</button>
+                </form>
+                <a href="{% url 'app:profile' %}" class="btn btn-secondary btn-block mt-2">Отменить и вернуться в профиль</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

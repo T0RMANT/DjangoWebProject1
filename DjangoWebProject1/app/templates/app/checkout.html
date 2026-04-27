@@ -1,0 +1,142 @@
+{% extends "app/layout.html" %}
+
+{% block title %}
+  Оформление заказа
+{% endblock %}
+
+{% block content %}
+  <h1>Оформление заказа</h1>
+  <div class="order-info">
+    <h3>Ваш заказ</h3>
+    <ul>
+      {% for item in cart %}
+        <li>
+          {{ item.quantity }}x {{ item.product.name }}
+          <span>{{ item.total_price }} руб.</span>
+        </li>
+      {% endfor %}
+    </ul>
+    <p>Итого: {{ cart.get_total_price }} руб.</p>
+  </div>
+  <div class="row">
+      <div class="col-md-6">
+        <h3>Адрес доставки</h3>
+        <form action="." method="post" class="order-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            
+            <div class="form-group">
+                {{ form.first_name.label_tag }}
+                {{ form.first_name }}
+                {{ form.first_name.errors }}
+            </div>
+            <div class="form-group">
+                {{ form.last_name.label_tag }}
+                {{ form.last_name }}
+                {{ form.last_name.errors }}
+            </div>
+            {% if not user.is_authenticated %}
+            <div class="form-group">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+                {{ form.email.errors }}
+            </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <label>{{ form.delivery_service.label }}</label>
+                <div>
+                    {% for radio in form.delivery_service %}
+                    <div class="radio">
+                        <label>
+                            {{ radio.tag }}
+                            {{ radio.choice_label }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {{ form.delivery_service.errors }}
+            </div>
+
+            <div id="delivery-details">
+                <div class="form-group" id="cdek-point-field">
+                    {{ form.cdek_point.label_tag }}
+                    {{ form.cdek_point }}
+                    {{ form.cdek_point.errors }}
+                </div>
+                <div class="form-group" id="post-office-field">
+                    {{ form.post_office_address.label_tag }}
+                    {{ form.post_office_address }}
+                    {{ form.post_office_address.errors }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form.address.label_tag }}
+                {{ form.address }}
+                {{ form.address.errors }}
+            </div>
+            <div class="form-group">
+                {{ form.postal_code.label_tag }}
+                {{ form.postal_code }}
+                {{ form.postal_code.errors }}
+            </div>
+            <div class="form-group">
+                {{ form.city.label_tag }}
+                {{ form.city }}
+                {{ form.city.errors }}
+            </div>
+
+            <p><input type="submit" value="Разместить заказ" class="btn btn-primary"></p>
+        </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deliveryServiceRadios = document.querySelectorAll('input[name="delivery_service"]');
+        const cdekPointField = document.querySelector('#cdek-point-field');
+        const postOfficeField = document.querySelector('#post-office-field');
+
+        function toggleFields() {
+            const selectedService = document.querySelector('input[name="delivery_service"]:checked').value;
+
+            // By default, hide all special fields
+            cdekPointField.style.display = 'none';
+            postOfficeField.style.display = 'none';
+
+            if (selectedService === 'cdek') {
+                cdekPointField.style.display = ''; // Show CDEK field
+            } else if (selectedService === 'russian_post' || selectedService === 'sber_logistics') {
+                postOfficeField.style.display = ''; // Show Post Office field
+            }
+            // The standard address fields are always visible now
+        }
+
+        deliveryServiceRadios.forEach(radio => {
+            radio.addEventListener('change', toggleFields);
+        });
+
+        // Initial check on page load
+        toggleFields();
+    });
+</script>
+
+      </div>
+      <div class="col-md-6">
+        <h3>Способ оплаты</h3>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <p><strong>Картой онлайн (ЮKassa)</strong></p>
+                <div class="well" style="background-color: #eee;">
+                    <p class="text-center" style="padding-top: 20px;">После размещения заказа вы будете перенаправлены на страницу оплаты ЮKassa.</p>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <p><strong>При получении</strong></p>
+                <p>Оплата наличными или картой курьеру при получении заказа.</p>
+            </div>
+        </div>
+      </div>
+  </div>
+{% endblock %}

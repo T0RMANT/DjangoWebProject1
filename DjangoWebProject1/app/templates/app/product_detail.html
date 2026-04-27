@@ -1,0 +1,155 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+
+<style>
+    .main-image {
+        margin-bottom: 15px;
+    }
+    .thumbnail-gallery {
+        display: flex;
+        gap: 10px;
+    }
+    .thumbnail-gallery img {
+        width: 80px;
+        height: 80px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        border-radius: 5px;
+    }
+    .thumbnail-gallery img.active,
+    .thumbnail-gallery img:hover {
+        border-color: #007bff;
+    }
+    .star-rating .fa-star {
+        color: #f8ce0b;
+    }
+    .star-rating .fa-star-o {
+        color: #e0e0e0;
+    }
+</style>
+
+<div class="row">
+    <!-- Product Gallery -->
+    <div class="col-md-6">
+        <div class="main-image">
+            {% if product.main_image %}
+                <img id="mainProductImage" src="{{ product.main_image.url }}" alt="{{ product.name }}" class="img-responsive">
+            {% else %}
+                <img id="mainProductImage" src="http://placehold.it/500x500" alt="{{ product.name }}" class="img-responsive">
+            {% endif %}
+        </div>
+        <div class="thumbnail-gallery">
+            {% if product.main_image %}
+            <img src="{{ product.main_image.url }}" alt="{{ product.name }}" class="active" onclick="changeImage('{{ product.main_image.url }}')">
+            {% endif %}
+            {% for image in product_images %}
+            <img src="{{ image.image.url }}" alt="{{ product.name }}" onclick="changeImage('{{ image.image.url }}')">
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h2>{{ product.name }}</h2>
+        <p class="text-muted">Категория: <a href="{{ product.category.get_absolute_url }}">{{ product.category }}</a></p>
+        <p><strong>Производитель:</strong> {{ product.brand }}</p>
+        <p><strong>Масштаб:</strong> {{ product.scale }}</p>
+        <p><strong>Материал:</strong> {{ product.material }}</p>
+        <p>{{ product.description|linebreaks }}</p>
+        <h3>{{ product.price }} руб.</h3>
+        <form action="{% url "app:cart_add" product.id %}" method="post">
+            {% csrf_token %}
+            {{ cart_product_form }}
+            <button type="submit" class="btn btn-primary">В корзину</button>
+        </form>
+    </div>
+</div>
+
+<hr>
+
+<!-- Reviews Section -->
+<div class="row">
+    <div class="col-md-12">
+        <h3>Отзывы</h3>
+        {% for review in reviews %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <strong>{{ review.author.username }}</strong>
+                    <span class="text-muted">- {{ review.created_at|date:"d.m.Y H:i" }}</span>
+                    <span class="pull-right star-rating">
+                        {% for i in "12345" %}
+                            {% if i|add:0 <= review.rating %}
+                                <span class="fa fa-star">★</span>
+                            {% else %}
+                                <span class="fa fa-star-o">☆</span>
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                <div class="panel-body">
+                    {{ review.text|linebreaks }}
+                </div>
+            </div>
+        {% empty %}
+            <p>Отзывов пока нет. Будьте первым!</p>
+        {% endfor %}
+    </div>
+</div>
+
+<hr>
+
+<!-- Add Review Form -->
+<div class="row">
+    <div class="col-md-12">
+        <h3>Ваш отзыв</h3>
+        {% if user.is_authenticated %}
+            {% if user_review %}
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <strong>Ваш отзыв</strong>
+                         <span class="pull-right star-rating">
+                            {% for i in "12345" %}
+                                {% if i|add:0 <= user_review.rating %}
+                                    <span class="fa fa-star">★</span>
+                                {% else %}
+                                    <span class="fa fa-star-o">☆</span>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    <div class="panel-body">
+                        {{ user_review.text|linebreaks }}
+                        <a href="{% url 'app:delete_review' user_review.id %}" class="btn btn-danger btn-xs pull-right">Удалить</a>
+                    </div>
+                </div>
+                <p>Вы уже оставили отзыв на этот товар. Вы можете удалить его и написать новый.</p>
+            {% elif can_review %}
+                <form method="post">
+                    {% csrf_token %}
+                    {{ review_form.as_p }}
+                    <button type="submit" class="btn btn-success">Отправить</button>
+                </form>
+            {% else %}
+                <p>Не забудьте оставить отзыв при получении заказа.</p>
+            {% endif %}
+        {% else %}
+            <p>Пожалуйста, <a href="{% url 'login' %}?next={{ request.path }}">войдите</a>, чтобы оставить отзыв.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function changeImage(imageUrl) {
+        document.getElementById('mainProductImage').src = imageUrl;
+        const thumbnails = document.querySelectorAll('.thumbnail-gallery img');
+        thumbnails.forEach(thumb => {
+            if (thumb.src === imageUrl) {
+                thumb.classList.add('active');
+            } else {
+                thumb.classList.remove('active');
+            }
+        });
+    }
+</script>
+{% endblock %}

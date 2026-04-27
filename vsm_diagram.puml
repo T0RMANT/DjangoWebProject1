@@ -1,0 +1,104 @@
+@startuml
+title Карта потрока создания ценности (VSM) - Производство сигарет
+
+!theme plain
+skinparam defaultTextAlignment center
+skinparam roundrectangle {
+  BackgroundColor #adebad
+  borderColor #336622
+}
+skinparam database {
+  BackgroundColor #lightyellow
+  borderColor #a8a833
+}
+skinparam actor {
+  BackgroundColor #lightblue
+  borderColor #333399
+}
+skinparam agent {
+  BackgroundColor #f0f0f0
+  borderColor #666666
+  FontSize 10
+}
+
+' === Определения участников и систем ===
+agent "**Поставщики**\n//Табак, ацетат//" as Supplier
+agent "**ERP Группы**\n//Интеграция://\n- Отчеты\n- Прогнозы\n- Запасы" as ERP
+agent "**Дистрибьюторы**\n//Заказ//: 80 000 ед./нед." as Customer
+
+' === ВРЕМЕННАЯ ШКАЛА ===
+agent "**Информационный поток**" as InfoFlow
+agent "**Материальный поток**" as MatFlow
+agent "**Время выполнения**\n(дни)" as Timeline
+
+' === Управление ===
+agent "**Управление производством**\n(Компания А)" as ProdControl
+ProdControl -[hidden]d-> ERP
+ERP -[hidden]d-> Customer
+
+' === ПРОЦЕССЫ С МЕТРИКАМИ ===
+' Формат: Процесс [C/T = ...] [C/O = ...] \n [Uptime = ...] \n [Инвентарь = ...]
+
+agent "**Получение сырья**\n<color:#336622>C/T: 0.5 дня</color>\nИнвентарь: 5 дней" as Receive
+agent "**Запасы сырья**\n(Табак, Ацетат)" as RawInventory
+
+agent "**Подготовка табака**\n<color:#336622>C/T: 1.2 дня</color>\n<color:red>Простой: 10%</color>\nИнвентарь: 2 дня" as PrepTobacco
+agent "**Обработанный табак**" as ProcessedTobacco
+
+agent "**Производство фильтров**\n<color:#336622>C/T: 0.8 дня</color>\nИнвентарь: 1.5 дня" as MakeFilters
+agent "**Готовые фильтры**" as FinishedFilters
+
+agent "**Сборка сигарет**\n<color:#336622>C/T: 0.3 дня</color>" as Assembly
+agent "**Упаковка сигарет**\n<color:#336622>C/T: 0.2 дня</color>" as Packing
+agent "**Готовые сигареты**\n(на складе)" as FinishedGoods
+
+agent "**Отгрузка**\n(внешняя компания)\n<color:#336622>C/T: 1 день</color>\n<color:red>Задержка: 15%</color>" as Shipping
+
+' === РАСПОЛОЖЕНИЕ ПО ШКАЛАМ ===
+InfoFlow -[hidden]r-> ProdControl
+MatFlow -[hidden]r-> Receive
+Timeline -[hidden]r-> Receive
+
+' Информационный поток
+Supplier --> ProdControl : "Еженедельный\nплан поставок"
+ProdControl --> ERP : "Ежедневная\nсинхронизация"
+ERP --> Customer : "Доступность\nпродукции"
+
+' Материальный поток
+Supplier --> Receive
+Receive --> RawInventory
+RawInventory --> PrepTobacco
+PrepTobacco --> ProcessedTobacco
+RawInventory --> MakeFilters
+MakeFilters --> FinishedFilters
+
+ProcessedTobacco --> Assembly
+FinishedFilters --> Assembly
+Assembly --> Packing
+Packing --> FinishedGoods
+FinishedGoods --> Shipping
+Shipping --> Customer
+
+' === Информационные потоки управления ===
+ProdControl --> Receive : "Заявка на закупку"
+ProdControl --> PrepTobacco : "График производства"
+ProdControl --> MakeFilters : "График производства"
+ProdControl --> Shipping : "Заказ на отгрузку"
+
+' === ВРЕМЕННЫЕ ИНДИКАТОРЫ ===
+Timeline --> Receive : 0.5
+Timeline --> PrepTobacco : +1.2
+Timeline --> ProcessedTobacco : +2.0
+Timeline --> MakeFilters : +0.8
+Timeline --> FinishedFilters : +1.5
+Timeline --> Assembly : +0.3
+Timeline --> Packing : +0.2
+Timeline --> FinishedGoods : +1.0
+Timeline --> Shipping : +1.0
+
+note bottom of Timeline
+  <b>Итого время цикла (Lead Time):</b>\n≈ <color:red>8 дней</color>\n
+  <b>Время такта (Takt Time):</b>\n40 000 сек/нед / 80 000 ед/нед = 0.5 дня/партию
+end note
+
+@enduml

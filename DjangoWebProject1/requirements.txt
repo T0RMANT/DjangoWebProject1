@@ -1,0 +1,4 @@
+django>=3.2.14
+
+Pillow>=10.0.0
+yookassa>=2.1.2

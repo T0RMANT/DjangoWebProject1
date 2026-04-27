@@ -1,0 +1,77 @@
+@startuml
+title BPMN-подобная схема: Производство сигарет и интеграция с ERP
+
+skinparam backgroundColor #F9F9F9
+skinparam defaultTextAlignment center
+skinparam activity {
+  BorderColor #333333
+  BackgroundColor #E6F3FF
+  FontColor #000000
+}
+skinparam note {
+  BackgroundColor #FFF2CC
+  BorderColor #BF9000
+}
+
+' === УЧАСТНИКИ ПРОЦЕССА ===
+actor "Поставщики" as Supplier
+participant "Компания А\n(Склад сырья)" as CompanyA_Stock
+participant "Компания А\n(Производство)" as CompanyA_Prod
+participant "Компания А\n(Управление/Контроль)" as CompanyA_Mgmt
+participant "ERP Система\nГруппы" as ERP_Group
+participant "Логистический\nпартнер" as Logistic
+actor "Дистрибьюторы" as Distributor
+
+' === ОСНОВНОЙ ПРОЦЕСС ===
+
+' 1. Поставка и учет
+Supplier -> CompanyA_Stock : Поставка сырья\n(табак, ацетат целлюлозы)
+CompanyA_Stock -> CompanyA_Mgmt : Учет поступления
+CompanyA_Mgmt -> ERP_Group : Обновление данных о запасах\n[синхронизация 1]
+
+' 2. Параллельное производство
+CompanyA_Mgmt -> CompanyA_Prod : План производства\nи задание
+activate CompanyA_Prod
+
+par
+  CompanyA_Prod -> CompanyA_Prod : **Линия табака**: \n1. Увлажнение, добавки\n2. Смешивание, резка, прессование
+  alt Производство "легких" сигарет
+    CompanyA_Prod -> CompanyA_Prod : 3. Расширение табака
+  end
+  CompanyA_Prod -> CompanyA_Prod : 4. Упаковка табака
+  CompanyA_Prod --> CompanyA_Mgmt : Готовый табак
+else
+  CompanyA_Prod -> CompanyA_Prod : **Линия фильтров**: \n1. Отделение волокон\n2. Добавление пластификатора\n3. Нарезка стержней\n4. Затвердевание
+  CompanyA_Prod --> CompanyA_Mgmt : Готовые фильтры
+end
+
+' 3. Сборка и упаковка
+CompanyA_Mgmt -> CompanyA_Prod : Запуск сборки
+CompanyA_Prod -> CompanyA_Prod : Сборка сигарет\n(табак + фильтр + бумага)
+CompanyA_Prod -> CompanyA_Prod : Упаковка готовых сигарет
+CompanyA_Prod --> CompanyA_Mgmt : Продукция упакована
+
+deactivate CompanyA_Prod
+
+' 4. Отчетность и планирование отгрузки
+CompanyA_Mgmt -> CompanyA_Mgmt : Формирование отчета\nо производстве
+CompanyA_Mgmt -> ERP_Group : Передача отчета и прогнозов\n[синхронизация 2]
+ERP_Group --> CompanyA_Mgmt : Подтверждение приема
+
+CompanyA_Mgmt -> Logistic : Заявка на отгрузку
+Logistic -> CompanyA_Stock : Получение продукции\nсо склада готовой продукции
+Logistic -> Distributor : Отгрузка дистрибьюторам
+
+' 5. Финальный учет
+Logistic --> CompanyA_Mgmt : Уведомление об отгрузке
+CompanyA_Mgmt -> ERP_Group : Обновление остатков\n[синхронизация 3]
+
+note right of CompanyA_Mgmt
+  <b>Точки синхронизации с ERP:</b>
+  1. Уровни запасов сырья
+  2. Производственные отчеты
+     и прогнозы
+  3. Остатки готовой продукции
+end note
+
+@enduml

@@ -1,0 +1,39 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+
+{% if user.is_staff %}
+    <a href="{% url 'app:post_create' %}" class="btn btn-primary">Создать новый пост</a>
+    <hr>
+{% endif %}
+
+<div class="row" style="display: flex; flex-wrap: wrap;">
+    {% for post in posts %}
+    <div class="col-md-4" style="display: flex; flex-direction: column;">
+        <div class="panel panel-default" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="panel-heading">
+                <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+            </div>
+            <div class="panel-body" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    {% if post.image %}
+                        <img src="{{ post.image.url }}" class="img-responsive" alt="{{ post.title }}" style="height: 200px; object-fit: cover; margin-bottom: 15px;">
+                    {% endif %}
+                    <p class="text-muted">
+                        Опубликовано {{ post.created_at|date:"d.m.Y" }} by {{ post.author.username }}
+                    </p>
+                    <p>{{ post.text|truncatewords:30|linebreaks }}</p>
+                </div>
+                <a href="{{ post.get_absolute_url }}" class="btn btn-info">Читать далее</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-md-12">
+        <p>Еще нет постов.</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

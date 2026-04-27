@@ -1,0 +1,105 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+
+<div class="jumbotron">
+    <h1>Магазин моделей и миниатюр</h1>
+    <p class="lead">Коллекционируйте ваш мир в миниатюре.</p>
+    <p><a href="#catalog" class="btn btn-primary btn-large">Смотреть каталог &raquo;</a></p>
+</div>
+
+<div class="row text-center">
+    <div class="col-md-4">
+        <span class="glyphicon glyphicon-send" style="font-size: 3em;"></span>
+        <h3>Быстрая доставка</h3>
+        <p>Доставка по всему миру.</p>
+    </div>
+    <div class="col-md-4">
+        <span class="glyphicon glyphicon-ok-sign" style="font-size: 3em;"></span>
+        <h3>Гарантия качества</h3>
+        <p>Только лучшие материалы.</p>
+    </div>
+    <div class="col-md-4">
+        <span class="glyphicon glyphicon-headphones" style="font-size: 3em;"></span>
+        <h3>Поддержка 24/7</h3>
+        <p>Мы всегда на связи.</p>
+    </div>
+</div>
+
+<hr>
+
+<div class="row" id="catalog">
+    <!-- Category Sidebar -->
+    <div class="col-md-3">
+        <h3>Категории</h3>
+        <div class="list-group">
+            <a href="{% url 'app:product_list' %}" class="list-group-item {% if not category %}active{% endif %}">
+                Все
+            </a>
+            {% for c in categories %}
+                <a href="{{ c.get_absolute_url }}" class="list-group-item {% if category.slug == c.slug %}active{% endif %}">
+                    {{ c.name }}
+                </a>
+            {% endfor %}
+        </div>
+        <h4>Фильтр по цене</h4>
+        <form method="get" action="">
+            <div class="form-group">
+                <label for="min_price">От:</label>
+                <input type="number" name="min_price" id="min_price" value="{{ request.GET.min_price }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="max_price">До:</label>
+                <input type="number" name="max_price" id="max_price" value="{{ request.GET.max_price }}" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-default">Применить</button>
+        </form>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="col-md-9">
+        <div class="well well-sm">
+            <strong>Сортировать по:</strong>
+            <a href="?sort=name">Названию</a> |
+            <a href="?sort=price">Цене (возр)</a> |
+            <a href="?sort=-price">Цене (убыв)</a>
+        </div>
+        <div class="row products-grid">
+            {% for product in products %}
+            <div class="col-md-4 col-sm-6">
+                <div class="thumbnail">
+                    <a href="{{ product.get_absolute_url }}">
+                        {% if product.main_image %}
+                            <img src="{{ product.main_image.url }}" alt="{{ product.name }}" style="height:200px; width:100%; object-fit: cover;">
+                        {% else %}
+                            <img src="http://placehold.it/300x200" alt="{{ product.name }}">
+                        {% endif %}
+                    </a>
+                    <div class="caption">
+                        <h4><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h4>
+                        <p>{{ product.price }} руб.</p>
+                        <p>
+                            {% if product.avg_rating %}
+                                Рейтинг: ★ {{ product.avg_rating|floatformat:1 }}/5.0
+                            {% else %}
+                                Рейтинг: нет оценок
+                            {% endif %}
+                        </p>
+                        <form action="{% url "app:cart_add" product.id %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <input type="hidden" name="update" value="False">
+                            <button type="submit" class="btn btn-primary">В корзину</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                <div class="col-xs-12">
+                    <p>Нет товаров в данной категории.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
